@@ -39,7 +39,8 @@
 
 
             <li>
-                <a href="{{ route('orders.history') }}" class="nav-link {{ request()->is('orders/history') ? 'active' : '' }}">
+                <a href="{{ route('orders.history') }}"
+                    class="nav-link {{ request()->is('orders/history') ? 'active' : '' }}">
                     <span class="nav-icon"><i class="bi bi-clock-history"></i></span>
                     <span class="fs-6 fw-bold">History Pesanan</span>
                 </a>
@@ -64,7 +65,7 @@
             </div>
         </div>
 
-        <form method="POST" action="#">
+        <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button class="logout-btn" type="submit">
                 <i class="bi bi-box-arrow-right"></i>
