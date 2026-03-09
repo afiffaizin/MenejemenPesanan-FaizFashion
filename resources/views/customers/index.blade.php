@@ -20,15 +20,12 @@
             </div>
         </div>
 
-        {{-- Content Card --}}
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="card-body p-4">
 
-                {{-- FILTER & SEARCH TOOLBAR --}}
                 <form action="{{ route('customers.index') }}" method="GET" class="mb-4">
                     <div class="row g-2 align-items-center">
 
-                        {{-- 1. Search Bar --}}
                         <div class="col-12 col-md-4">
                             <div class="input-group">
                                 <button type="submit"
@@ -42,7 +39,6 @@
                             </div>
                         </div>
 
-                        {{-- 2. Filter Gender --}}
                         <div class="col-6 col-md-3 col-lg-2 mt-3 mt-md-0">
                             <select name="gender" class="form-select bg-light border-0 rounded-pill"
                                 onchange="this.form.submit()">

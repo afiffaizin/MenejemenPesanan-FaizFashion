@@ -84,10 +84,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-center align-items-center gap-2">
-                                            <a href="#" class="btn btn-action btn-soft-secondary"
-                                                data-bs-toggle="tooltip" title="Detail">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
+
 
                                             <a href="{{ route('orders.destroy', $order->id) }}"
                                                 class="btn btn-action btn-soft-danger" data-confirm-delete="true"
