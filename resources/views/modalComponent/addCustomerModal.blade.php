@@ -1,143 +1,161 @@
-<form method="POST" action="{{ route('customers.store') }}">
-    @csrf
+{{-- Add Customer Modal (Tailwind + Alpine.js) --}}
+<div id="modalTambahCustomer" class="hidden fixed inset-0 z-[60] overflow-y-auto" x-data="customerModal()">
+    {{-- Backdrop --}}
+    <div class="fixed inset-0 bg-black/50 modal-backdrop-blur" @click="closeModal()"></div>
 
-    <input type="hidden" name="customerType" value="new">
+    {{-- Modal Content --}}
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl animate-fade-in">
 
-    <div class="modal fade" id="modalTambahCustomer" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content custom-modal-content">
+            {{-- Header --}}
+            <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white px-6 py-5 rounded-t-2xl flex items-center justify-between">
+                <h2 class="text-base font-bold flex items-center gap-2">
+                    <i class="bi bi-person-plus"></i> Tambah Customer Baru
+                </h2>
+                <button @click="closeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <i class="bi bi-x-lg text-sm"></i>
+                </button>
+            </div>
 
-                <div class="modal-header custom-modal-header">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-person-plus me-2"></i>Tambah Customer Baru</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
+            <form method="POST" action="{{ route('customers.store') }}">
+                @csrf
+                <input type="hidden" name="customerType" value="new">
 
-                <div class="modal-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="custom-label">Nama Lengkap</label>
-                            <input type="text" name="name" class="form-control" placeholder="Nama Customer..."
-                                required>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1.5">Nama Lengkap <span class="text-red-500">*</span></label>
+                            <input type="text" name="name" required
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   placeholder="Nama Customer...">
                         </div>
-                        <div class="col-md-6">
-                            <label class="custom-label">Gender</label>
-                            <select class="form-select" name="gender">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1.5">Gender <span class="text-red-500">*</span></label>
+                            <select name="gender"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                 <option value="L">Laki-laki</option>
                                 <option value="P">Perempuan</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
-                            <label class="custom-label">Nomor Telephone</label>
-                            <input type="text" class="form-control" name="phone" placeholder="Nomor telephone...">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1.5">Nomor Telephone</label>
+                            <input type="text" name="phone"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   placeholder="Nomor telephone...">
                         </div>
-                        <div class=" col-md-6">
-                            <label class="custom-label">Alamat</label>
-                            <textarea class="form-control" name="address" placeholder="Alamat lengkap..."></textarea>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1.5">Alamat</label>
+                            <textarea name="address" rows="1"
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                                      placeholder="Alamat lengkap..."></textarea>
                         </div>
+                    </div>
 
-                        <div class="col-12 mt-4">
-                            <label class="custom-label d-block mb-2">Kategori Ukuran Awal</label>
-                            <div class="d-flex gap-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="nameCategory" value="Atasan"
-                                        id="catAtasanCustomer" onchange="toggleInputs()" checked>
-                                    <label class="form-check-label" for="catAtasanCustomer">Atasan</label>
+                    {{-- Category Toggle --}}
+                    <div class="mt-5">
+                        <label class="block text-sm font-semibold text-gray-600 mb-3">Kategori Ukuran Awal <span class="text-red-500">*</span></label>
+                        <div class="flex gap-3">
+                            <label class="cursor-pointer flex-1">
+                                <input type="radio" name="nameCategory" value="Atasan" x-model="category" class="hidden peer" checked>
+                                <div class="peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-gray-200 rounded-xl p-3 text-center transition-all duration-200 hover:border-blue-300">
+                                    <i class="bi bi-chevron-up text-lg text-blue-500"></i>
+                                    <p class="text-sm font-semibold text-gray-700 mt-1">Atasan</p>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="nameCategory" value="Bawahan"
-                                        id="catBawahanCustomer" onchange="toggleInputs()">
-                                    <label class="form-check-label" for="catBawahanCustomer">Bawahan</label>
+                            </label>
+                            <label class="cursor-pointer flex-1">
+                                <input type="radio" name="nameCategory" value="Bawahan" x-model="category" class="hidden peer">
+                                <div class="peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-gray-200 rounded-xl p-3 text-center transition-all duration-200 hover:border-blue-300">
+                                    <i class="bi bi-chevron-down text-lg text-blue-500"></i>
+                                    <p class="text-sm font-semibold text-gray-700 mt-1">Bawahan</p>
                                 </div>
-                            </div>
+                            </label>
                         </div>
+                    </div>
 
-
-                        <div id="inputAtasanCustomer" class="col-12">
-                            <div class="measurement-area">
-                                <span class="measurement-badge">Form Ukuran Atasan</span>
-                                <div class="row g-3">
-                                    <div class="col-md-4">
-                                        <label class="small text-muted fw-bold">Panjang Baju</label>
-                                        <input type="number" name="panjang" class="form-control form-control-sm">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="small text-muted fw-bold">Lingkar Badan</label>
-                                        <input type="number" name="lingkar_badan" class="form-control form-control-sm">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="small text-muted fw-bold">Lingkar Pinggang</label>
-                                        <input type="number" name="lingkar_pinggang"
-                                            class="form-control form-control-sm">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="small text-muted fw-bold">Lebar Punggung</label>
-                                        <input type="number" name="punggung" class="form-control form-control-sm">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="small text-muted fw-bold">Panjang Lengan</label>
-                                        <input type="number" name="panjang_lengan"
-                                            class="form-control form-control-sm">
-                                    </div>
+                    {{-- Measurement: Atasan --}}
+                    <div x-show="category === 'Atasan'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-5">
+                        <div class="measurement-dashed rounded-xl p-5 bg-white">
+                            <span class="measurement-badge inline-block bg-slate-800 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                Form Ukuran Atasan
+                            </span>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Panjang Baju</label>
+                                    <input type="number" name="panjang" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                 </div>
-                            </div>
-                        </div>
-
-                        <div id="inputBawahanCustomer" class="col-12 d-none">
-                            <div class="measurement-area">
-                                <span class="measurement-badge">Form Ukuran
-                                    Bawahan</span>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="small text-muted fw-bold">Panjang (Cln/Rok)</label>
-                                        <input type="number" name="panjang_pinggang"
-                                            class="form-control form-control-sm">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="small text-muted fw-bold">Lingkar Pinggul</label>
-                                        <input type="number" name="pinggul" class="form-control form-control-sm">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="small text-muted fw-bold">Pisak (Crotch)</label>
-                                        <input type="number" name="pisak" class="form-control form-control-sm">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="small text-muted fw-bold">Pangkal Paha</label>
-                                        <input type="number" name="pangkal_paha"
-                                            class="form-control form-control-sm">
-                                    </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Lingkar Badan</label>
+                                    <input type="number" name="lingkar_badan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Lingkar Pinggang</label>
+                                    <input type="number" name="lingkar_pinggang" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Lebar Punggung</label>
+                                    <input type="number" name="punggung" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Panjang Lengan</label>
+                                    <input type="number" name="panjang_lengan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    {{-- Measurement: Bawahan --}}
+                    <div x-show="category === 'Bawahan'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-5">
+                        <div class="measurement-dashed rounded-xl p-5 bg-white">
+                            <span class="measurement-badge inline-block bg-slate-800 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                Form Ukuran Bawahan
+                            </span>
+                            <div class="grid grid-cols-2 gap-3 mt-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Panjang (Cln/Rok)</label>
+                                    <input type="number" name="panjang_pinggang" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Lingkar Pinggul</label>
+                                    <input type="number" name="pinggul" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Pisak (Crotch)</label>
+                                    <input type="number" name="pisak" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Pangkal Paha</label>
+                                    <input type="number" name="pangkal_paha" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="modal-footer bg-light border-0">
-                    <button type="button" class="btn btn-link text-decoration-none text-muted"
-                        data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-simpan shadow"><i class="bi bi-save me-2"></i>Simpan
-                        Customer</button>
+                {{-- Footer --}}
+                <div class="flex items-center justify-end gap-2 px-6 py-4 bg-gray-50 rounded-b-2xl">
+                    <button type="button" @click="closeModal()" class="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 transition-colors">
+                        <i class="bi bi-save"></i> Simpan Customer
+                    </button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
-</form>
+</div>
 
 @push('scripts')
-    <script>
-        function toggleInputs() {
-            const isAtasan = document.getElementById('catAtasanCustomer').checked;
-            const divAtasan = document.getElementById('inputAtasanCustomer');
-            const divBawahan = document.getElementById('inputBawahanCustomer');
+<script>
+function customerModal() {
+    return {
+        category: 'Atasan',
 
-            if (isAtasan) {
-                divAtasan.classList.remove('d-none');
-                divBawahan.classList.add('d-none');
-            } else {
-                divAtasan.classList.add('d-none');
-                divBawahan.classList.remove('d-none');
-            }
+        closeModal() {
+            document.getElementById('modalTambahCustomer').classList.add('hidden');
         }
-    </script>
+    };
+}
+</script>
 @endpush

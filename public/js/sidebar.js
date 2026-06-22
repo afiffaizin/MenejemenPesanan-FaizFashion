@@ -1,32 +1,25 @@
 (() => {
-    const sidebar = document.getElementById("appSidebar");
-    const backdrop = document.getElementById("sidebarBackdrop");
-    const openBtn = document.getElementById("sidebarToggleBtn");
-    const closeBtn = document.getElementById("sidebarCloseBtn");
+    // Sidebar is now controlled by Alpine.js x-data on the body
+    // This script handles keyboard and resize events
 
-    function open() {
-        sidebar.classList.add("sidebar-open");
-        backdrop.classList.add("active");
-        document.body.style.overflow = "hidden";
-    }
+    // Close sidebar on Escape key
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            // Trigger Alpine.js data update
+            const body = document.body;
+            if (body.__x) {
+                body.__x.$data.sidebarOpen = false;
+            }
+        }
+    });
 
-    function close() {
-        sidebar.classList.remove("sidebar-open");
-        backdrop.classList.remove("active");
-        document.body.style.overflow = "";
-    }
-
-    function toggle() {
-        sidebar.classList.contains("sidebar-open") ? close() : open();
-    }
-
-    openBtn && openBtn.addEventListener("click", toggle);
-    closeBtn && closeBtn.addEventListener("click", close);
-    backdrop && backdrop.addEventListener("click", close);
-
-    document.addEventListener("keydown", (e) => e.key === "Escape" && close());
-    window.addEventListener(
-        "resize",
-        () => window.innerWidth >= 992 && close(),
-    );
+    // Close sidebar on window resize to desktop
+    window.addEventListener("resize", () => {
+        if (window.innerWidth >= 1024) {
+            const body = document.body;
+            if (body.__x) {
+                body.__x.$data.sidebarOpen = false;
+            }
+        }
+    });
 })();

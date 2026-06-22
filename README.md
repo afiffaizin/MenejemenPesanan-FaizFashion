@@ -1,59 +1,227 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🧵 FaizFashion — Tailor Order Management System
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="public/images/logo.svg" alt="FaizFashion Logo" width="80">
 </p>
 
-## About Laravel
+<p align="center">
+  <strong>A modern web-based management system for tailoring businesses</strong>
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel">
+  <img src="https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3.x-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/MySQL-8.0+-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📋 Table of Contents
 
-## Learning Laravel
+- [About the Project](#-about-the-project)
+- [Key Features](#-key-features)
+- [Technology Stack](#-technology-stack)
+- [Prerequisites](#-prerequisites)
+- [Installation Guide](#-installation-guide)
+- [Usage](#-usage)
+- [License](#-license)
+- [Contact](#-contact)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 📖 About the Project
 
-## Laravel Sponsors
+**FaizFashion Management System** is a professional, full-featured web application built to streamline day-to-day operations for tailors, seamstresses, and small fashion boutiques. It replaces manual record-keeping with a clean digital workflow — from registering new customers and recording their body measurements, to tracking every order from intake through completion.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+The system is designed for **shop owners and admin staff** who need a reliable, easy-to-use tool to manage their customer database, keep accurate measurement records for different clothing categories (tops and bottoms), and maintain full visibility over pending and completed orders. Built with Laravel 12 and a polished Tailwind CSS interface, it delivers a smooth, responsive experience on both desktop and mobile devices.
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## ✨ Key Features
 
-## Contributing
+- **Admin Dashboard** — At-a-glance statistics (total customers, pending orders, completed orders, total orders), interactive monthly trend chart, status breakdown doughnut chart, and a recent pending orders table.
+- **Customer Management** — Full CRUD for customer profiles including name, gender, phone number, and address. Search by name and filter by gender or clothing category.
+- **Body Measurement Records** — Store per-customer, per-category measurements. Tops (Atasan): panjang, lingkar badan, lingkar pinggang, punggung, panjang lengan. Bottoms (Bawahan): panjang pinggang, pinggul, pisak, pangkal paha. Each size record supports free-text notes.
+- **Order Lifecycle** — Create orders for existing or new customers in a single flow. Orders move from **Pending** to **Selesai** (completed) with one click.
+- **Order History** — Dedicated history view for completed orders with search, pagination, and detail pages.
+- **Quick Order Creation** — Two modes: select an existing customer and their saved measurements, or create a brand-new customer with measurements and order in one transaction.
+- **Interactive Alerts** — SweetAlert2 confirmations on destructive actions and toast notifications for success/error feedback.
+- **Responsive Design** — Mobile-first layout with collapsible sidebar, smooth transitions, and Alpine.js interactivity.
+- **Role-Based Access** — Admin middleware ensures only authorized users can access the system.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🛠 Technology Stack
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Layer           | Technologies                                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Backend**     | [Laravel 12](https://laravel.com/) · PHP 8.2+                                                                                         |
+| **Frontend**    | [Tailwind CSS 3](https://tailwindcss.com/) · [Alpine.js 3](https://alpinejs.dev/) · [Blade Templates](https://laravel.com/docs/blade) |
+| **Database**    | MySQL 8.0+                                                                                                                            |
+| **Charts**      | [Chart.js 4](https://www.chartjs.org/)                                                                                                |
+| **Icons**       | [Bootstrap Icons](https://icons.getbootstrap.com/)                                                                                    |
+| **Alerts**      | [SweetAlert2](https://sweetalert2.github.io/) · [realrashid/sweet-alert](https://github.com/realrashid/sweet-alert)                   |
+| **Auth**        | [Laravel Breeze](https://laravel.com/docs/starter-kits#laravel-breeze)                                                                |
+| **Build Tools** | [Vite 7](https://vitejs.dev/) · npm                                                                                                   |
+| **Testing**     | [Pest](https://pestphp.com/)                                                                                                          |
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 📌 Prerequisites
 
-## License
+Make sure the following tools are installed on your machine before proceeding:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Tool         | Minimum Version | Purpose                              |
+| ------------ | --------------- | ------------------------------------ |
+| **PHP**      | 8.2+            | Runtime                              |
+| **Composer** | 2.x             | PHP dependency manager               |
+| **MySQL**    | 8.0+            | Database server                      |
+| **Node.js**  | 20+             | Frontend build tooling               |
+| **npm**      | 9+              | Package manager (ships with Node.js) |
+| **Git**      | 2.x             | Version control                      |
+
+---
+
+## 🚀 Installation Guide
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/afiffaizin/MenejemenPesanan-FaizFashion.git
+cd MenejemenPesanan-FaizFashion
+```
+
+### 2. Install PHP Dependencies
+
+```bash
+composer install
+```
+
+### 3. Install Frontend Dependencies & Build Assets
+
+```bash
+npm install
+npm run build
+```
+
+### 4. Configure Environment Variables
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and update the database settings to match your local setup:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=menejemen_pesanan
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 5. Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+### 6. Create the Database
+
+Create the MySQL database manually before running migrations:
+
+```sql
+CREATE DATABASE menejemen_pesanan;
+```
+
+### 7. Run Migrations & Seed Data
+
+```bash
+php artisan migrate --seed
+```
+
+This creates all tables and seeds a default admin account. To also populate the database with 60+ realistic sample customers, sizes, and orders:
+
+```bash
+php artisan db:seed --class=SampleDataSeeder
+```
+
+### 8. Start the Development Server
+
+```bash
+php artisan serve
+```
+
+The application will be available at **[http://localhost:8000](http://localhost:8000)**.
+
+> **Tip:** For a full development experience with hot-reload, run the Vite dev server alongside Laravel:
+>
+> ```bash
+> # Terminal 1
+> php artisan serve
+>
+> # Terminal 2
+> npm run dev
+> ```
+>
+> Or use the built-in composer script that starts everything concurrently:
+>
+> ```bash
+> composer dev
+> ```
+
+---
+
+## 💡 Usage
+
+### Default Login Credentials
+
+| Field        | Value             |
+| ------------ | ----------------- |
+| **Email**    | `admin@gmail.com` |
+| **Password** | `password`        |
+
+### Basic Workflow
+
+1. **Log in** with the admin credentials above.
+2. **Dashboard** — Review pending queue counts, monthly trends, and recent orders.
+3. **Customers** — Add new customers with their body measurements, or browse/search/filter existing ones.
+4. **Tambah Pesanan (Add Order)** — Create an order by selecting an existing customer and one of their saved sizes, or register a new customer with measurements and create the order in one step.
+5. **Manage Orders** — Mark pending orders as completed, view order details, or delete orders.
+6. **History** — Browse all completed orders with search and pagination.
+
+### URL Reference
+
+| URL               | Description                                |
+| ----------------- | ------------------------------------------ |
+| `/dashboard`      | Admin dashboard with statistics and charts |
+| `/order`          | Active orders list and order creation      |
+| `/orders/history` | Completed orders history                   |
+| `/customer`       | Customer directory                         |
+| `/customer/{id}`  | Customer detail with size records          |
+
+---
+
+## 📄 License
+
+This project is open-source software licensed under the [MIT License](https://opensource.org/licenses/MIT).
+
+---
+
+## 📬 Contact
+
+**Afif Faizin** — Developer & Maintainer
+
+|            |                                                           |
+| ---------- | --------------------------------------------------------- |
+| **Email**  | [afiffaizin758@gmail.com](mailto:afiffaizin758@gmail.com) |
+| **GitHub** | [github.com/afiffaizin](https://github.com/afiffaizin)    |
+
+---
+
+<p align="center">
+  Built to empower tailoring businesses with better customer management.
+</p>

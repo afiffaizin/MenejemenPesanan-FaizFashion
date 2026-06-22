@@ -50,7 +50,7 @@ class CustomerController extends Controller
             'phone'          => 'nullable|string|max:20',
             'gender'        => 'required|in:L,P',
             'address'        => 'nullable|string|max:50',
-            'nameCategory'   => 'required|string|in:Atasan,Bawahan',
+            'nameCategory'   => 'required|string|in:Atasan,Bawahan,atasan,bawahan',
 
             // atasan
             'panjang'        => 'nullable|numeric',
@@ -78,7 +78,7 @@ class CustomerController extends Controller
                 ]);
 
                 $category = Category::firstOrCreate(
-                    ['nameCategory' => $request->nameCategory]
+                    ['nameCategory' => ucfirst(strtolower($request->nameCategory))]
                 );
 
 
@@ -132,65 +132,26 @@ class CustomerController extends Controller
     // update data customer
     public function update(Request $request, Customer $customer)
     {
-        // 1. Validasi (Perhatikan: 'nameCategory' sudah dihapus dari sini agar tidak perlu divalidasi)
         $request->validate([
-            'name'           => 'required|string|max:20',
+            'name'           => 'required|string|max:100',
             'phone'          => 'nullable|string|max:20',
             'gender'         => 'required|in:L,P',
-            'address'        => 'nullable|string|max:50',
-
-            // atasan
-            'panjang'        => 'nullable|numeric',
-            'lingkar_badan'  => 'nullable|numeric',
-            'lingkar_pinggang' => 'nullable|numeric',
-            'punggung'       => 'nullable|numeric',
-            'panjang_lengan' => 'nullable|numeric',
-
-            // bawahan
-            'panjang_pinggang' => 'nullable|numeric',
-            'pinggul'        => 'nullable|numeric',
-            'pisak'          => 'nullable|numeric',
-            'pangkal_paha'   => 'nullable|numeric',
-
-            'keterangan'     => 'nullable|string',
+            'address'        => 'nullable|string|max:255',
         ]);
 
         try {
             DB::transaction(function () use ($request, $customer) {
-                // 2. Update data utama customer
+                // Update data utama customer
                 $customer->update([
                     'name'    => $request->name,
                     'phone'   => $request->phone,
                     'address' => $request->address,
                     'gender'  => $request->gender,
                 ]);
-
-                // 3. Ambil data ukuran yang sudah ada (tidak perlu cek kategori lagi)
-                $existingSize = $customer->sizes()->first();
-
-                // 4. Update detail ukurannya saja
-                if ($existingSize) {
-                    $existingSize->update([
-                        // atasan
-                        'panjang'          => $request->panjang,
-                        'lingkar_badan'    => $request->lingkar_badan,
-                        'lingkar_pinggang' => $request->lingkar_pinggang,
-                        'punggung'         => $request->punggung,
-                        'panjang_lengan'   => $request->panjang_lengan,
-
-                        // bawahan
-                        'panjang_pinggang' => $request->panjang_pinggang,
-                        'pinggul'          => $request->pinggul,
-                        'pisak'            => $request->pisak,
-                        'pangkal_paha'     => $request->pangkal_paha,
-
-                        'keterangan'       => $request->keterangan,
-                    ]);
-                }
             });
 
             Alert::success('Berhasil', 'Data pelanggan berhasil diperbarui!');
-            return redirect()->route('customers.index');
+            return redirect()->route('customers.show', $customer->id);
         } catch (\Exception $e) {
             Alert::error('Gagal', 'Terjadi kesalahan saat memperbarui data.');
             return back()->withInput();

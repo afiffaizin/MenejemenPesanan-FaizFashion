@@ -3,148 +3,164 @@
 @section('title', 'Customers Management')
 
 @section('content')
-    <div class="container-fluid p-4">
+    <div class="p-4 md:p-6 lg:p-8">
 
-        {{-- Header Section --}}
-        <div class="d-md-flex justify-content-between align-items-center mb-4">
-            <div class="mb-3 mb-md-0">
-                <h2 class="fw-bold text-dark mb-0">Hallo Admin</h2>
-                <p class="text-muted small mb-0">Kelola dan filter data pelanggan Anda di sini.</p>
+        {{-- Page Header --}}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Halo Admin</h1>
+                <p class="text-sm text-gray-500 mt-1">Kelola dan filter data pelanggan Anda di sini.</p>
             </div>
-
-            <div class="d-grid d-md-block">
-                <button class="btn btn-primary shadow-sm px-4 fw-semibold" data-bs-toggle="modal"
-                    data-bs-target="#modalTambahCustomer">
-                    <i class="bi bi-person-fill-add me-2"></i>Tambah Customer
-                </button>
-            </div>
+            <button onclick="document.getElementById('modalTambahCustomer').classList.remove('hidden')"
+                    class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 transition-colors">
+                <i class="bi bi-person-fill-add"></i>
+                Tambah Customer
+            </button>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-            <div class="card-body p-4">
+        {{-- Content Card --}}
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-4 md:p-6">
 
-                <form action="{{ route('customers.index') }}" method="GET" class="mb-4">
-                    <div class="row g-2 align-items-center">
-
-                        <div class="col-12 col-md-4">
-                            <div class="input-group">
-                                <button type="submit"
-                                    class="input-group-text bg-light border-end-0 rounded-start-pill ps-3 text-decoration-none"
-                                    style="cursor: pointer; border-right: 0;">
-                                    <i class="bi bi-search text-muted"></i>
-                                </button>
-                                <input type="text" name="search"
-                                    class="form-control bg-light border-start-0 rounded-end-pill" placeholder="Cari nama..."
-                                    value="{{ request('search') }}">
+                {{-- Filter & Search --}}
+                <form action="{{ route('customers.index') }}" method="GET" class="mb-5">
+                    <div class="flex flex-col sm:flex-row gap-2 flex-wrap">
+                        {{-- Search --}}
+                        <div class="relative flex-1 min-w-[200px] max-w-md">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="bi bi-search text-gray-400"></i>
                             </div>
+                            <input type="text" name="search"
+                                   class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   placeholder="Cari nama..." value="{{ request('search') }}">
                         </div>
 
-                        <div class="col-6 col-md-3 col-lg-2 mt-3 mt-md-0">
-                            <select name="gender" class="form-select bg-light border-0 rounded-pill"
-                                onchange="this.form.submit()">
-                                <option value="">Semua Gender</option>
-                                <option value="L" {{ request('gender') == 'L' ? 'selected' : '' }}>Laki-laki</option>
-                                <option value="P" {{ request('gender') == 'P' ? 'selected' : '' }}>Perempuan</option>
-                            </select>
-                        </div>
+                        {{-- Gender Filter --}}
+                        <select name="gender" onchange="this.form.submit()"
+                                class="px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">Semua Gender</option>
+                            <option value="L" {{ request('gender') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                            <option value="P" {{ request('gender') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                        </select>
 
-                        {{-- 3. Filter Kategori --}}
-                        <div class="col-6 col-md-3 col-lg-2 mt-3 mt-md-0">
-                            <select name="category" class="form-select bg-light border-0 rounded-pill"
-                                onchange="this.form.submit()">
-                                <option value="">Semua Kategori</option>
-                                <option value="Atasan" {{ request('category') == 'Atasan' ? 'selected' : '' }}>Atasan
-                                </option>
-                                <option value="Bawahan" {{ request('category') == 'Bawahan' ? 'selected' : '' }}>Bawahan
-                                </option>
-                            </select>
-                        </div>
+                        {{-- Category Filter --}}
+                        <select name="category" onchange="this.form.submit()"
+                                class="px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="">Semua Kategori</option>
+                            <option value="Atasan" {{ request('category') == 'Atasan' ? 'selected' : '' }}>Atasan</option>
+                            <option value="Bawahan" {{ request('category') == 'Bawahan' ? 'selected' : '' }}>Bawahan</option>
+                        </select>
 
-                        {{-- 4. Tombol Reset (Muncul jika ada filter aktif) --}}
-                        @if (request('search') || request('gender') || request('category'))
-                            <div class="col-12 col-md-auto">
-                                <a href="{{ route('customers.index') }}"
-                                    class="btn btn-light text-danger rounded-pill w-100 border-0">
-                                    <i class="bi bi-x-circle me-1"></i> Reset
-                                </a>
-                            </div>
+                        <button type="submit"
+                                class="px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                            Cari
+                        </button>
+
+                        @if(request('search') || request('gender') || request('category'))
+                            <a href="{{ route('customers.index') }}"
+                               class="px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors inline-flex items-center gap-1">
+                                <i class="bi bi-x-circle"></i> Reset
+                            </a>
                         @endif
                     </div>
                 </form>
 
                 {{-- Table --}}
-                <div class="table-responsive">
-                    <table class="table align-middle custom-table table-striped table-bordered">
-                        <thead class="bg-light-subtle text-secondary">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-500 uppercase bg-transparent border-b border-gray-200">
                             <tr>
-                                <th class="py-3 rounded-start-3 text-center" width="5%">No</th>
-                                <th class="py-3">Nama Lengkap</th>
-                                <th class="py-3 text-center">Gender</th>
-                                <th class="py-3 text-center">Kategori</th>
-                                <th class="py-3 text-center rounded-end-3" width="15%">Aksi</th>
+                                <th scope="col" class="px-4 py-4 font-semibold w-12 text-center">No</th>
+                                <th scope="col" class="px-4 py-4 font-semibold">Customer</th>
+                                <th scope="col" class="px-4 py-4 font-semibold">Gender</th>
+                                <th scope="col" class="px-4 py-4 font-semibold">Kategori Ukuran</th>
+                                <th scope="col" class="px-4 py-4 font-semibold text-center w-32">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-gray-100/80">
                             @forelse($customers as $index => $customer)
-                                <tr>
-                                    <td class="text-center fw-bold text-muted">{{ $index + $customers->firstItem() }}</td>
-                                    <td>
-                                        <span class="fw-bold text-dark text-truncate">{{ $customer->name }}</span>
+                                <tr class="hover:bg-gray-50/50 transition-colors group">
+                                    <td class="px-4 py-4 text-center text-gray-400 font-medium">
+                                        {{ $index + $customers->firstItem() }}
                                     </td>
-                                    <td class="text-center">
-                                        @if ($customer->gender == 'L')
-                                            <span class="badge bg-blue-soft text-blue rounded-pill px-3">
-                                                <i class="bi bi-gender-male me-1"></i> Laki-laki
-                                            </span>
-                                        @else
-                                            <span class="badge bg-pink-soft text-pink rounded-pill px-3">
-                                                <i class="bi bi-gender-female me-1"></i> Perempuan
-                                            </span>
-                                        @endif
+                                    
+                                    {{-- Customer Avatar & Name --}}
+                                    <td class="px-4 py-4">
+                                        <div class="flex items-center gap-3">
+                                            @php
+                                                $initials = collect(explode(' ', $customer->name))->map(fn($n) => substr($n, 0, 1))->take(2)->implode('');
+                                            @endphp
+                                            <div class="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold border border-blue-100 flex-shrink-0">
+                                                {{ strtoupper($initials) }}
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{{ $customer->name }}</span>
+                                                <span class="text-xs text-gray-400">{{ $customer->phone ?? 'No phone' }}</span>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td class="text-center">
-                                        @php
-                                            $catName = $customer->sizes->first()?->category?->nameCategory ?? '-';
-                                        @endphp
-                                        @if ($catName == 'Atasan')
-                                            <span class="badge bg-purple-soft text-purple rounded-pill px-3">Atasan</span>
-                                        @elseif($catName == 'Bawahan')
-                                            <span class="badge bg-teal-soft text-teal rounded-pill px-3">Bawahan</span>
-                                        @else
-                                            <span
-                                                class="badge bg-secondary-soft text-secondary rounded-pill px-3">{{ $catName }}</span>
-                                        @endif
+
+                                    {{-- Gender --}}
+                                    <td class="px-4 py-4">
+                                        <div class="flex items-center gap-1.5">
+                                            @if($customer->gender == 'L')
+                                                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                                <span class="text-gray-600 font-medium">Laki-laki</span>
+                                            @else
+                                                <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+                                                <span class="text-gray-600 font-medium">Perempuan</span>
+                                            @endif
+                                        </div>
                                     </td>
-                                    <td>
-                                        <div class="d-flex justify-content-center align-items-center gap-2">
+
+                                    {{-- Categories --}}
+                                    <td class="px-4 py-4">
+                                        <div class="flex flex-wrap gap-1.5">
+                                            @forelse($customer->sizes as $size)
+                                                @php $catName = strtolower($size->category->nameCategory ?? ''); @endphp
+                                                @if($catName == 'atasan')
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">Atasan</span>
+                                                @elseif($catName == 'bawahan')
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-teal-50 text-teal-700 border border-teal-100">Bawahan</span>
+                                                @else
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">{{ $size->category->nameCategory ?? 'Unknown' }}</span>
+                                                @endif
+                                            @empty
+                                                <span class="text-gray-400 italic text-xs">Belum ada</span>
+                                            @endforelse
+                                        </div>
+                                    </td>
+
+                                    {{-- Actions --}}
+                                    <td class="px-4 py-4">
+                                        <div class="flex items-center justify-center gap-2">
                                             <a href="{{ route('customers.show', $customer->id) }}"
-                                                class="btn btn-action btn-soft-secondary" data-bs-toggle="tooltip"
-                                                title="Detail">
-                                                <i class="bi bi-eye"></i>
+                                               class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200"
+                                               title="Detail">
+                                                <i class="bi bi-eye text-sm"></i>
                                             </a>
                                             <a href="{{ route('customers.edit', $customer->id) }}"
-                                                class="btn btn-action btn-soft-primary" data-bs-toggle="tooltip"
-                                                title="Edit">
-                                                <i class="bi bi-pencil-square"></i>
+                                               class="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white transition-all duration-200"
+                                               title="Edit">
+                                                <i class="bi bi-pencil-square text-sm"></i>
                                             </a>
                                             <a href="{{ route('customers.destroy', $customer->id) }}"
-                                                class="btn btn-action btn-soft-danger" data-confirm-delete="true"
-                                                title="Hapus">
-                                                <i class="bi bi-trash"></i>
+                                               class="w-8 h-8 rounded-lg flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-200"
+                                               data-confirm-delete="true" title="Hapus">
+                                                <i class="bi bi-trash text-sm"></i>
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-5">
-                                        <div class="empty-state">
-                                            <div class="mb-3">
-                                                <i class="bi bi-search fs-1 text-muted opacity-25"></i>
+                                    <td colspan="5" class="px-4 py-16 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                                                <i class="bi bi-inbox text-2xl text-gray-400"></i>
                                             </div>
-                                            <h6 class="text-muted fw-bold">Data tidak ditemukan</h6>
-                                            <p class="text-muted small mb-0">Coba ubah filter atau kata kunci pencarian
-                                                Anda.</p>
+                                            <h3 class="text-sm font-semibold text-gray-900">Data tidak ditemukan</h3>
+                                            <p class="text-xs text-gray-500 mt-1 max-w-sm">Coba ubah kata kunci pencarian atau bersihkan filter Anda untuk melihat lebih banyak hasil.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -154,12 +170,45 @@
                 </div>
 
                 {{-- Pagination --}}
-                <div class="pagination-wrapper mt-4">
+                <div class="pagination-wrapper">
                     {{ $customers->links() }}
                 </div>
-
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll("[data-confirm-delete]").forEach(function(link) {
+            link.addEventListener("click", function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                Swal.fire({
+                    title: 'Hapus Data?',
+                    text: "Data tidak bisa dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    customClass: { popup: 'rounded-xl' }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = url;
+                        form.innerHTML = `@csrf @method('DELETE')`;
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
+@endpush
+
 @include('modalComponent.addCustomerModal')

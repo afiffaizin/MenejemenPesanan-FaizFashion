@@ -40,4 +40,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/customer/{customer}', [CustomerController::class, 'show'])->name('customers.show');
     Route::get('/customer/{customer}/edit', [CustomerController::class, 'edit'])->name('customers.edit');
     Route::put('/customer/{customer}', [CustomerController::class, 'update'])->name('customers.update');
+
+    // sizes
+    Route::post('/customers/{customer}/sizes', [App\Http\Controllers\SizeController::class, 'store'])->name('sizes.store');
+    Route::put('/sizes/{size}', [App\Http\Controllers\SizeController::class, 'update'])->name('sizes.update');
+    Route::delete('/sizes/{size}', [App\Http\Controllers\SizeController::class, 'destroy'])->name('sizes.destroy');
 });

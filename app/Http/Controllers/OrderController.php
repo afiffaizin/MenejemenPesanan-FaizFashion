@@ -22,8 +22,40 @@ class OrderController extends Controller
         // total pesanan
         $totalOrderan = Order::count();
 
+        // Chart.js data: Monthly order trend (last 12 months)
+        $monthlyData = [];
+        $monthlyLabels = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthlyLabels[] = $date->translatedFormat('M Y');
+            $monthlyData[] = Order::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+        }
 
-        return view('dashboard.index', compact('customers', 'totalCustomers', 'pendingOrders', 'orderanSelesai', 'totalOrderan'));
+        // Chart.js data: Status breakdown for doughnut chart
+        $statusPending = $pendingOrders;
+        $statusSelesai = $orderanSelesai;
+
+        // Recent pending orders for the dashboard table
+        $recentOrders = Order::with(['customer', 'size.category'])
+            ->where('status', 'Pending')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('dashboard.index', compact(
+            'customers',
+            'totalCustomers',
+            'pendingOrders',
+            'orderanSelesai',
+            'totalOrderan',
+            'monthlyLabels',
+            'monthlyData',
+            'statusPending',
+            'statusSelesai',
+            'recentOrders'
+        ));
     }
 
 
@@ -31,7 +63,7 @@ class OrderController extends Controller
     {
         $customers = Customer::orderBy('name')->get();
         $orders = Order::with(['customer', 'size', 'category'])
-            ->where('status', '!=', 'selesai')
+            ->where('status', '!=', 'Selesai')
             ->orderBy('created_at', 'desc');
 
         // pencarian
@@ -52,7 +84,7 @@ class OrderController extends Controller
     public function history()
     {
         $orders = Order::with(['customer', 'size', 'category'])
-            ->where('status', '=', 'selesai')
+            ->where('status', '=', 'Selesai')
             ->orderBy('updated_at', 'desc');
 
         if ($search = request('search')) {
@@ -126,7 +158,7 @@ class OrderController extends Controller
                     'phone'            => 'nullable|string|max:20',
                     'gender'           => 'required|in:L,P',
                     'address'          => 'nullable|string|max:255',
-                    'nameCategory'     => 'required|string|in:atasan,bawahan',
+                    'nameCategory'     => 'required|string|in:Atasan,Bawahan,atasan,bawahan',
                     'panjang'          => 'nullable|numeric',
                     'lingkar_badan'    => 'nullable|numeric',
                     'lingkar_pinggang' => 'nullable|numeric',
@@ -160,8 +192,9 @@ class OrderController extends Controller
                     Log::info('Customer created', ['customer_id' => $customer->id]);
 
                     // Create or get category
+                    $categoryName = ucfirst(strtolower($validated['nameCategory']));
                     $category = Category::firstOrCreate(
-                        ['nameCategory' => $validated['nameCategory']]
+                        ['nameCategory' => $categoryName]
                     );
 
                     Log::info('Category resolved', ['category_id' => $category->id]);
@@ -209,7 +242,7 @@ class OrderController extends Controller
     {
         try {
             $order->update([
-                'status' => 'selesai',
+                'status' => 'Selesai',
             ]);
 
             Alert::success('Berhasil', 'Status pesanan berhasil diperbarui!');

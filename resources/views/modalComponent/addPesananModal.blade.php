@@ -1,569 +1,356 @@
-<form method="POST" action="{{ route('orders.store') }}" id="formAddOrder" enctype="multipart/form-data">
-    @csrf
-    <div class="modal fade" id="modalTambahPesanan" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content custom-modal-content">
+{{-- Add Pesanan Modal (Tailwind + Alpine.js) --}}
+<div id="modalTambahPesanan" class="hidden fixed inset-0 z-[60] overflow-y-auto" x-data="orderModal()" x-init="init()">
+    {{-- Backdrop --}}
+    <div class="fixed inset-0 bg-black/50 modal-backdrop-blur" @click="closeModal()"></div>
 
-                <div class="modal-header custom-modal-header">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-bag-plus me-2"></i>Tambah Pesanan</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+    {{-- Modal Content --}}
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl animate-fade-in">
+
+            {{-- Header --}}
+            <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white px-6 py-5 rounded-t-2xl flex items-center justify-between">
+                <h2 class="text-base font-bold flex items-center gap-2">
+                    <i class="bi bi-bag-plus"></i> Tambah Pesanan
+                </h2>
+                <button @click="closeModal()" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <i class="bi bi-x-lg text-sm"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('orders.store') }}" id="formAddOrder" @submit="onSubmit($event)">
+                @csrf
+
+                {{-- Validation Error --}}
+                <div x-show="errorMsg" x-cloak class="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span x-text="errorMsg"></span>
                 </div>
 
-                <!-- Validation Error Alert -->
-                <div id="alertError" class="alert alert-danger alert-dismissible fade show d-none m-4 mb-0"
-                    role="alert">
-                    <span id="errorContent"></span>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
-                        aria-label="Close"></button>
-                </div>
+                <div class="p-6">
 
-                <div class="modal-body p-4">
-
-                    <div class="text-center">
-                        <div class="toggle-wrapper">
-                            <input type="radio" class="btn-check" name="customerType" id="typeExisting"
-                                value="existing" checked onchange="toggleCustomerType()">
-                            <label class="btn-toggle-option" for="typeExisting">Pelanggan Lama</label>
-
-                            <input type="radio" class="btn-check" name="customerType" id="typeNew" value="new"
-                                onchange="toggleCustomerType()">
-                            <label class="btn-toggle-option" for="typeNew">Pelanggan Baru</label>
+                    {{-- Toggle: Pelanggan Lama / Baru --}}
+                    <div class="flex justify-center mb-6">
+                        <div class="inline-flex bg-gray-100 rounded-full p-1 shadow-inner">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="customerType" value="existing" x-model="customerType" class="hidden peer">
+                                <span class="block px-6 py-2.5 text-sm font-semibold rounded-full transition-all duration-300 peer-checked:bg-white peer-checked:text-gray-900 peer-checked:shadow text-gray-500">
+                                    Pelanggan Lama
+                                </span>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="customerType" value="new" x-model="customerType" class="hidden peer">
+                                <span class="block px-6 py-2.5 text-sm font-semibold rounded-full transition-all duration-300 peer-checked:bg-white peer-checked:text-gray-900 peer-checked:shadow text-gray-500">
+                                    Pelanggan Baru
+                                </span>
+                            </label>
                         </div>
                     </div>
 
-                    <div id="sectionExisting" class="fade show">
-                        <div class="mb-3">
-                            <label class="custom-label">Cari Nama Pelanggan <span class="text-danger">*</span></label>
-                            <select id="selectPelanggan" name="customer_id" class="form-select">
-                                <option value="" selected disabled>-- Pilih Pelanggan --</option>
-                                @foreach ($customers as $customer)
-                                    <option value="{{ $customer->id }}"
-                                        {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
-                                        {{ $customer->name }}
-                                    </option>
+                    {{-- Section: Existing Customer --}}
+                    <div x-show="customerType === 'existing'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-gray-600 mb-1.5">Cari Nama Pelanggan <span class="text-red-500">*</span></label>
+                            <select id="selectPelanggan" name="customer_id" x-model="customerId" @change="loadSizes()"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                <option value="">-- Pilih Pelanggan --</option>
+                                @foreach($customers as $customer)
+                                    <option value="{{ $customer->id }}">{{ $customer->name }}</option>
                                 @endforeach
                             </select>
-                            @error('customer_id')
-                                <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i>
-                                    {{ $message }}</small>
-                            @enderror
                         </div>
 
-                        <!-- Loading Indicator -->
-                        <div id="loadingSizeExisting" class="d-none mt-3">
-                            <div class="text-center">
-                                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <small class="text-muted">Memuat data ukuran...</small>
+                        {{-- Loading --}}
+                        <div x-show="loadingSizes" class="text-center py-4">
+                            <svg class="animate-spin h-5 w-5 text-blue-500 inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-sm text-gray-500">Memuat data ukuran...</span>
+                        </div>
+
+                        {{-- Sizes Display --}}
+                        <div x-show="sizes.length > 0 && !loadingSizes" class="mt-3 bg-blue-50 rounded-xl p-4">
+                            <h3 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                <i class="bi bi-ruler"></i> Pilih Ukuran <span class="text-red-500">*</span>
+                            </h3>
+                            <div class="space-y-2">
+                                <template x-for="(size, idx) in sizes" :key="size.id">
+                                    <div @click="selectSize(size)"
+                                         :class="selectedSizeId == size.id ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-gray-200 bg-white hover:border-blue-300'"
+                                         class="p-3 border-2 rounded-xl cursor-pointer transition-all duration-200">
+                                        <div class="flex items-center gap-3">
+                                            <div :class="selectedSizeId == size.id ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'"
+                                                 class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors">
+                                                <div x-show="selectedSizeId == size.id" class="w-2 h-2 bg-white rounded-full"></div>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-blue-700">
+                                                    <i class="bi bi-tag mr-1"></i>
+                                                    Kategori: <span x-text="size.category?.nameCategory === 'atasan' ? 'Atasan' : 'Bawahan'"></span>
+                                                </p>
+                                                <div class="mt-1 text-xs text-gray-600 space-y-0.5">
+                                                    <template x-if="size.category?.nameCategory === 'atasan'">
+                                                        <div>
+                                                            <span>Panjang: <strong x-text="(size.panjang ?? '-') + ' cm'"></strong></span> ·
+                                                            <span>L.Badan: <strong x-text="(size.lingkar_badan ?? '-') + ' cm'"></strong></span> ·
+                                                            <span>L.Pinggang: <strong x-text="(size.lingkar_pinggang ?? '-') + ' cm'"></strong></span>
+                                                        </div>
+                                                    </template>
+                                                    <template x-if="size.category?.nameCategory !== 'atasan'">
+                                                        <div>
+                                                            <span>Panjang: <strong x-text="(size.panjang_pinggang ?? '-') + ' cm'"></strong></span> ·
+                                                            <span>Pinggul: <strong x-text="(size.pinggul ?? '-') + ' cm'"></strong></span> ·
+                                                            <span>Pisak: <strong x-text="(size.pisak ?? '-') + ' cm'"></strong></span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </div>
 
-                        <!-- Display Sizes Information -->
-                        <div id="displaySizeExisting" class="info-box d-none mt-3">
-                            <h6 class="fw-bold mb-3"><i class="bi bi-ruler me-2"></i>Pilih Ukuran <span
-                                    class="text-danger">*</span></h6>
-                            <hr class="my-2">
-                            <div id="textUkuranExisting">-</div>
+                        {{-- Error --}}
+                        <div x-show="sizeError && !loadingSizes" class="mt-3 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 flex items-center gap-2">
+                            <i class="bi bi-info-circle"></i>
+                            <span x-text="sizeError"></span>
                         </div>
 
-                        <!-- Error Message -->
-                        <div id="errorSizeExisting" class="alert alert-info d-none mt-3" role="alert">
-                            <i class="bi bi-info-circle me-2"></i>
-                            <span id="errorMessage"></span>
-                        </div>
-
-                        @error('size_id')
-                            <small class="text-danger d-block mt-2"><i class="bi bi-exclamation-circle"></i>
-                                {{ $message }}</small>
-                        @enderror
-                        @error('category_id')
-                            <small class="text-danger d-block mt-2"><i class="bi bi-exclamation-circle"></i>
-                                {{ $message }}</small>
-                        @enderror
-
-                        <!-- Hidden inputs untuk size_id dan category_id -->
-                        <input type="hidden" id="hiddenSizeId" name="size_id" value="{{ old('size_id') }}">
-                        <input type="hidden" id="hiddenCategoryId" name="category_id" value="{{ old('category_id') }}">
+                        <input type="hidden" name="size_id" :value="selectedSizeId">
+                        <input type="hidden" name="category_id" :value="selectedCategoryId">
                     </div>
 
-                    <div id="sectionNew" class="d-none fade show">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="custom-label">Nama Lengkap <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                    name="name" placeholder="Nama pelanggan..." value="{{ old('name') }}">
-                                @error('name')
-                                    <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i>
-                                        {{ $message }}</small>
-                                @enderror
+                    {{-- Section: New Customer --}}
+                    <div x-show="customerType === 'new'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1.5">Nama Lengkap <span class="text-red-500">*</span></label>
+                                <input type="text" name="name" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                       placeholder="Nama pelanggan..." value="{{ old('name') }}">
                             </div>
-                            <div class="col-md-6">
-                                <label class="custom-label">Gender <span class="text-danger">*</span></label>
-                                <select class="form-select @error('gender') is-invalid @enderror" name="gender">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1.5">Gender <span class="text-red-500">*</span></label>
+                                <select name="gender" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                     <option value="">-- Pilih Gender --</option>
-                                    <option value="L" {{ old('gender') == 'L' ? 'selected' : '' }}>Laki-laki
-                                    </option>
-                                    <option value="P" {{ old('gender') == 'P' ? 'selected' : '' }}>Perempuan
-                                    </option>
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
                                 </select>
-                                @error('gender')
-                                    <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i>
-                                        {{ $message }}</small>
-                                @enderror
                             </div>
-                            <div class="col-md-6">
-                                <label class="custom-label">Nomor Telephone</label>
-                                <input type="text" class="form-control @error('phone') is-invalid @enderror"
-                                    name="phone" placeholder="Nomor telephone..." value="{{ old('phone') }}">
-                                @error('phone')
-                                    <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i>
-                                        {{ $message }}</small>
-                                @enderror
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1.5">Nomor Telephone</label>
+                                <input type="text" name="phone" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                       placeholder="Nomor telephone..." value="{{ old('phone') }}">
                             </div>
-                            <div class="col-md-6">
-                                <label class="custom-label">Alamat</label>
-                                <textarea class="form-control @error('address') is-invalid @enderror" name="address" placeholder="Alamat lengkap...">{{ old('address') }}</textarea>
-                                @error('address')
-                                    <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i>
-                                        {{ $message }}</small>
-                                @enderror
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1.5">Alamat</label>
+                                <textarea name="address" rows="1" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                                          placeholder="Alamat lengkap...">{{ old('address') }}</textarea>
                             </div>
+                        </div>
 
-                            <div class="col-12 mt-4">
-                                <label class="custom-label d-block mb-2">Kategori Pakaian <span
-                                        class="text-danger">*</span></label>
-                                <div class="d-flex gap-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="nameCategory"
-                                            value="atasan" id="catAtasan" onchange="toggleMeasurementInputs()"
-                                            {{ old('nameCategory') == 'atasan' || old('nameCategory') == '' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="catAtasan">Atasan</label>
+                        {{-- Category Toggle --}}
+                        <div class="mt-5">
+                            <label class="block text-sm font-semibold text-gray-600 mb-3">Kategori Pakaian <span class="text-red-500">*</span></label>
+                            <div class="flex gap-3">
+                                <label class="cursor-pointer flex-1">
+                                    <input type="radio" name="nameCategory" value="atasan" x-model="newCategory" class="hidden peer">
+                                    <div class="peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-gray-200 rounded-xl p-3 text-center transition-all duration-200 hover:border-blue-300">
+                                        <i class="bi bi-chevron-up text-lg text-blue-500"></i>
+                                        <p class="text-sm font-semibold text-gray-700 mt-1">Atasan</p>
                                     </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="nameCategory"
-                                            value="bawahan" id="catBawahan" onchange="toggleMeasurementInputs()"
-                                            {{ old('nameCategory') == 'bawahan' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="catBawahan">Bawahan</label>
+                                </label>
+                                <label class="cursor-pointer flex-1">
+                                    <input type="radio" name="nameCategory" value="bawahan" x-model="newCategory" class="hidden peer">
+                                    <div class="peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:ring-2 peer-checked:ring-blue-200 border-2 border-gray-200 rounded-xl p-3 text-center transition-all duration-200 hover:border-blue-300">
+                                        <i class="bi bi-chevron-down text-lg text-blue-500"></i>
+                                        <p class="text-sm font-semibold text-gray-700 mt-1">Bawahan</p>
                                     </div>
-                                </div>
-                                @error('nameCategory')
-                                    <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i>
-                                        {{ $message }}</small>
-                                @enderror
+                                </label>
                             </div>
+                        </div>
 
-                            <div id="inputAtasan"
-                                class="col-12 {{ old('nameCategory') == 'bawahan' ? 'd-none' : '' }}">
-                                <div class="measurement-area">
-                                    <span class="measurement-badge">Form Ukuran Atasan</span>
-                                    <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <label class="small text-muted fw-bold">Panjang Baju</label>
-                                            <input type="number" name="panjang" class="form-control form-control-sm"
-                                                value="{{ old('panjang') }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="small text-muted fw-bold">Lingkar Badan</label>
-                                            <input type="number" name="lingkar_badan"
-                                                class="form-control form-control-sm"
-                                                value="{{ old('lingkar_badan') }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="small text-muted fw-bold">Lingkar Pinggang</label>
-                                            <input type="number" name="lingkar_pinggang"
-                                                class="form-control form-control-sm"
-                                                value="{{ old('lingkar_pinggang') }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="small text-muted fw-bold">Lebar Punggung</label>
-                                            <input type="number" name="punggung"
-                                                class="form-control form-control-sm" value="{{ old('punggung') }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="small text-muted fw-bold">Panjang Lengan</label>
-                                            <input type="number" name="panjang_lengan"
-                                                class="form-control form-control-sm"
-                                                value="{{ old('panjang_lengan') }}">
-                                        </div>
+                        {{-- Measurement: Atasan --}}
+                        <div x-show="newCategory === 'atasan'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-5">
+                            <div class="measurement-dashed rounded-xl p-5 bg-white">
+                                <span class="measurement-badge inline-block bg-slate-800 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                    Form Ukuran Atasan
+                                </span>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Panjang Baju</label>
+                                        <input type="number" name="panjang" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" value="{{ old('panjang') }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Lingkar Badan</label>
+                                        <input type="number" name="lingkar_badan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" value="{{ old('lingkar_badan') }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Lingkar Pinggang</label>
+                                        <input type="number" name="lingkar_pinggang" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" value="{{ old('lingkar_pinggang') }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Lebar Punggung</label>
+                                        <input type="number" name="punggung" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" value="{{ old('punggung') }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Panjang Lengan</label>
+                                        <input type="number" name="panjang_lengan" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" value="{{ old('panjang_lengan') }}">
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div id="inputBawahan"
-                                class="col-12 {{ old('nameCategory') == 'bawahan' ? '' : 'd-none' }}">
-                                <div class="measurement-area">
-                                    <span class="measurement-badge">Form Ukuran Bawahan</span>
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label class="small text-muted fw-bold">Panjang (Cln/Rok)</label>
-                                            <input type="number" name="panjang_pinggang"
-                                                class="form-control form-control-sm"
-                                                value="{{ old('panjang_pinggang') }}">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="small text-muted fw-bold">Lingkar Pinggul</label>
-                                            <input type="number" name="pinggul" class="form-control form-control-sm"
-                                                value="{{ old('pinggul') }}">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="small text-muted fw-bold">Pisak (Crotch)</label>
-                                            <input type="number" name="pisak" class="form-control form-control-sm"
-                                                value="{{ old('pisak') }}">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="small text-muted fw-bold">Pangkal Paha</label>
-                                            <input type="number" name="pangkal_paha"
-                                                class="form-control form-control-sm"
-                                                value="{{ old('pangkal_paha') }}">
-                                        </div>
+                        {{-- Measurement: Bawahan --}}
+                        <div x-show="newCategory === 'bawahan'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="mt-5">
+                            <div class="measurement-dashed rounded-xl p-5 bg-white">
+                                <span class="measurement-badge inline-block bg-slate-800 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                    Form Ukuran Bawahan
+                                </span>
+                                <div class="grid grid-cols-2 gap-3 mt-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Panjang (Cln/Rok)</label>
+                                        <input type="number" name="panjang_pinggang" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" value="{{ old('panjang_pinggang') }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Lingkar Pinggul</label>
+                                        <input type="number" name="pinggul" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" value="{{ old('pinggul') }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Pisak (Crotch)</label>
+                                        <input type="number" name="pisak" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" value="{{ old('pisak') }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Pangkal Paha</label>
+                                        <input type="number" name="pangkal_paha" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" value="{{ old('pangkal_paha') }}">
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <label class="custom-label">Keterangan / Catatan Jahit</label>
-                        <textarea class="form-control @error('keterangan') is-invalid @enderror" name="keterangan" rows="3"
-                            placeholder="Contoh: Model slimfit, kerah sanghai, kain dari pelanggan...">{{ old('keterangan') }}</textarea>
-                        @error('keterangan')
-                            <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i>
-                                {{ $message }}</small>
-                        @enderror
+                    {{-- Keterangan --}}
+                    <div class="mt-5">
+                        <label class="block text-sm font-semibold text-gray-600 mb-1.5">Keterangan / Catatan Jahit</label>
+                        <textarea name="keterangan" rows="3"
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                                  placeholder="Contoh: Model slimfit, kerah sanghai, kain dari pelanggan...">{{ old('keterangan') }}</textarea>
                     </div>
-
                 </div>
 
-                <div class="modal-footer bg-light border-0">
-                    <button type="button" class="btn btn-link text-decoration-none text-muted"
-                        data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-simpan shadow"><i class="bi bi-save me-2"></i>Simpan
-                        Data</button>
+                {{-- Footer --}}
+                <div class="flex items-center justify-end gap-2 px-6 py-4 bg-gray-50 rounded-b-2xl">
+                    <button type="button" @click="closeModal()" class="px-4 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" :disabled="submitting"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <template x-if="!submitting"><span><i class="bi bi-save mr-1"></i> Simpan Data</span></template>
+                        <template x-if="submitting">
+                            <span class="flex items-center gap-2">
+                                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Menyimpan...
+                            </span>
+                        </template>
+                    </button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
-</form>
+</div>
 
 @push('scripts')
-    <script>
-        /**
-         * Initialize Select2 when modal is shown
-         * This ensures all libraries are loaded
-         */
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Form modal script loaded');
-            const modalEl = document.getElementById('modalTambahPesanan');
-            const formEl = document.getElementById('formAddOrder');
+<script>
+function orderModal() {
+    return {
+        customerType: 'existing',
+        customerId: '',
+        sizes: [],
+        selectedSizeId: '',
+        selectedCategoryId: '',
+        loadingSizes: false,
+        sizeError: '',
+        errorMsg: '',
+        submitting: false,
+        newCategory: 'atasan',
 
-            console.log('Modal element:', modalEl);
-            console.log('Form element:', formEl);
+        init() {},
 
-            if (modalEl) {
-                // Initialize when modal is shown
-                modalEl.addEventListener('show.bs.modal', function() {
-                    console.log('Modal shown');
-                    setTimeout(function() {
-                        initializeSelect2();
-                        setupEventListeners();
-                    }, 100);
-                });
-            }
+        closeModal() {
+            document.getElementById('modalTambahPesanan').classList.add('hidden');
+            this.resetForm();
+        },
 
-            // Add form submission validation
-            if (formEl) {
-                formEl.addEventListener('submit', function(e) {
-                    console.log('Form submit clicked');
-                    const isExisting = document.getElementById('typeExisting').checked;
-                    const submitBtn = formEl.querySelector('button[type="submit"]');
+        resetForm() {
+            this.sizes = [];
+            this.selectedSizeId = '';
+            this.selectedCategoryId = '';
+            this.sizeError = '';
+            this.errorMsg = '';
+            this.loadingSizes = false;
+        },
 
-                    console.log('Is existing customer:', isExisting);
-
-                    // Validate based on customer type
-                    if (isExisting) {
-                        // For existing customer
-                        const customerId = document.getElementById('selectPelanggan').value;
-                        const sizeId = document.getElementById('hiddenSizeId').value;
-                        const categoryId = document.getElementById('hiddenCategoryId').value;
-
-                        console.log('Customer ID:', customerId);
-                        console.log('Size ID:', sizeId);
-                        console.log('Category ID:', categoryId);
-
-                        if (!customerId || !sizeId || !categoryId) {
-                            e.preventDefault();
-                            showValidationError('Silakan pilih pelanggan dan ukuran terlebih dahulu');
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = '<i class="bi bi-save me-2"></i>Simpan Data';
-                            console.warn('Validation failed: Missing required fields');
-                            return false;
-                        }
-                    } else {
-                        // For new customer - check if required fields are filled
-                        const name = formEl.querySelector('input[name="name"]').value;
-                        const gender = formEl.querySelector('select[name="gender"]').value;
-                        const categoryRadio = formEl.querySelector('input[name="nameCategory"]:checked');
-                        const category = categoryRadio ? categoryRadio.value : '';
-
-                        console.log('Name:', name);
-                        console.log('Gender:', gender);
-                        console.log('Category:', category);
-
-                        if (!name || !gender || !category) {
-                            e.preventDefault();
-                            showValidationError(
-                                'Silakan isi semua field yang diperlukan (nama, gender, kategori)');
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = '<i class="bi bi-save me-2"></i>Simpan Data';
-                            console.warn('Validation failed: Missing required new customer fields');
-                            return false;
-                        }
-                    }
-
-                    // Jika validasi berhasil, set loading state dan izinkan form submit
-                    console.log('Validation passed, submitting form...');
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML =
-                        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Menyimpan...';
-                });
-            }
-        });
-
-        /**
-         * Show validation error message
-         */
-        function showValidationError(message) {
-            const alertEl = document.getElementById('alertError');
-            const contentEl = document.getElementById('errorContent');
-            contentEl.textContent = message;
-            alertEl.classList.remove('d-none');
-
-            // Scroll to alert
-            alertEl.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest'
-            });
-        }
-
-        function initializeSelect2() {
-            // Check if Select2 is available
-            if (typeof jQuery === 'undefined' || typeof jQuery.fn.select2 === 'undefined') {
-                console.warn('Select2 is not loaded yet');
+        async loadSizes() {
+            if (!this.customerId) {
+                this.resetForm();
                 return;
             }
+            this.loadingSizes = true;
+            this.sizeError = '';
+            this.sizes = [];
+            this.selectedSizeId = '';
+            this.selectedCategoryId = '';
 
-            const element = $('#selectPelanggan');
+            try {
+                const res = await fetch(`/customers/${this.customerId}/sizes`);
+                const data = await res.json();
 
-            // Destroy existing Select2 instance if it exists
-            if (element.data('select2')) {
-                element.select2('destroy');
-            }
+                this.loadingSizes = false;
 
-            // Initialize Select2
-            element.select2({
-                theme: 'bootstrap-5',
-                width: '100%',
-                placeholder: '-- Pilih Pelanggan --',
-                allowClear: true,
-                dropdownParent: $('#modalTambahPesanan')
-            });
-        }
-
-        function setupEventListeners() {
-            // Load customer sizes when customer is selected
-            $('#selectPelanggan').on('change', function() {
-                const customerId = $(this).val();
-                if (customerId) {
-                    loadCustomerSizes(customerId);
-                } else {
-                    resetSizeDisplay();
+                if (!data.success) {
+                    this.sizeError = data.message || 'Gagal mengambil data ukuran';
+                    return;
                 }
-            });
-
-            // Toggle between existing and new customer sections
-            $('input[name="customerType"]').on('change', function() {
-                toggleCustomerType();
-            });
-
-            // Toggle between atasan and bawahan measurements
-            $('input[name="nameCategory"]').on('change', function() {
-                toggleMeasurementInputs();
-            });
-        }
-
-        /**
-         * Load customer sizes via AJAX
-         */
-        function loadCustomerSizes(customerId) {
-            const loadingEl = document.getElementById('loadingSizeExisting');
-            const displayEl = document.getElementById('displaySizeExisting');
-            const errorEl = document.getElementById('errorSizeExisting');
-            const contentEl = document.getElementById('textUkuranExisting');
-
-            // Show loading state
-            loadingEl.classList.remove('d-none');
-            displayEl.classList.add('d-none');
-            errorEl.classList.add('d-none');
-
-            // Fetch data from server
-            fetch(`/customers/${customerId}/sizes`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    loadingEl.classList.add('d-none');
-
-                    if (!data.success) {
-                        // Show error message
-                        showErrorMessage(data.message || 'Gagal mengambil data ukuran');
-                        return;
-                    }
-
-                    // Display the sizes
-                    displaySizes(data.sizes);
-                })
-                .catch(error => {
-                    console.error('Error loading customer sizes:', error);
-                    loadingEl.classList.add('d-none');
-                    showErrorMessage('Terjadi kesalahan saat mengambil data. Silakan coba lagi.');
-                });
-        }
-
-        /**
-         * Display customer sizes in a formatted manner
-         * @param {Array} sizes - Array of size objects
-         */
-        function displaySizes(sizes) {
-            const displayEl = document.getElementById('displaySizeExisting');
-            const contentEl = document.getElementById('textUkuranExisting');
-
-            if (!sizes || sizes.length === 0) {
-                showErrorMessage('Belum ada data ukuran untuk pelanggan ini');
-                return;
-            }
-
-            let htmlContent = '';
-
-            sizes.forEach((size, index) => {
-                const category = size.category?.nameCategory ?? '-';
-                const categoryLabel = category === 'atasan' ? 'Atasan' : 'Bawahan';
-
-                htmlContent +=
-                    `<div class="size-item mb-3 p-3 border rounded cursor-pointer" style="cursor: pointer;" onclick="selectSize(${size.id}, ${size.category_id})">`;
-                htmlContent += `<div style="display: flex; align-items: center;">`;
-                htmlContent +=
-                    `<input type="radio" name="sizeSelection" value="${size.id}" data-category-id="${size.category_id}" style="margin-right: 10px;">`;
-                htmlContent += `<div>`;
-                htmlContent +=
-                    `<h6 class="text-primary mb-1"><i class="bi bi-tag me-1"></i>Kategori: ${categoryLabel}</h6>`;
-                htmlContent += '<ul class="list-unstyled small mb-0">';
-
-                if (category === 'atasan') {
-                    htmlContent += `<li class="mb-1"><strong>Panjang Baju:</strong> ${size.panjang ?? '-'} cm</li>`;
-                    htmlContent +=
-                        `<li class="mb-1"><strong>Lingkar Badan:</strong> ${size.lingkar_badan ?? '-'} cm</li>`;
-                    htmlContent +=
-                        `<li class="mb-1"><strong>Lingkar Pinggang:</strong> ${size.lingkar_pinggang ?? '-'} cm</li>`;
-                    htmlContent +=
-                        `<li class="mb-1"><strong>Lebar Punggung:</strong> ${size.punggung ?? '-'} cm</li>`;
-                    htmlContent +=
-                        `<li class="mb-1"><strong>Panjang Lengan:</strong> ${size.panjang_lengan ?? '-'} cm</li>`;
-                } else if (category === 'bawahan') {
-                    htmlContent +=
-                        `<li class="mb-1"><strong>Panjang:</strong> ${size.panjang_pinggang ?? '-'} cm</li>`;
-                    htmlContent +=
-                        `<li class="mb-1"><strong>Lingkar Pinggul:</strong> ${size.pinggul ?? '-'} cm</li>`;
-                    htmlContent += `<li class="mb-1"><strong>Pisak (Crotch):</strong> ${size.pisak ?? '-'} cm</li>`;
-                    htmlContent +=
-                        `<li class="mb-1"><strong>Pangkal Paha:</strong> ${size.pangkal_paha ?? '-'} cm</li>`;
+                if (!data.sizes || data.sizes.length === 0) {
+                    this.sizeError = 'Belum ada data ukuran untuk pelanggan ini';
+                    return;
                 }
-
-                htmlContent += "</ul>";
-                htmlContent += "</div>";
-                htmlContent += "</div>";
-                htmlContent += "</div>";
-            });
-
-            contentEl.innerHTML = htmlContent;
-            displayEl.classList.remove('d-none');
-        }
-
-        /**
-         * Select size and fill hidden inputs
-         */
-        function selectSize(sizeId, categoryId) {
-            document.getElementById('hiddenSizeId').value = sizeId;
-            document.getElementById('hiddenCategoryId').value = categoryId;
-
-            // Update radio button visual
-            const radios = document.querySelectorAll('input[name="sizeSelection"]');
-            radios.forEach(radio => {
-                radio.checked = (radio.value == sizeId);
-                radio.closest('.size-item').style.backgroundColor = (radio.checked ? '#e7f3ff' : 'transparent');
-            });
-        }
-
-        /**
-         * Show error message
-         * @param {string} message - Error message to display
-         */
-        function showErrorMessage(message) {
-            const errorEl = document.getElementById('errorSizeExisting');
-            const messageEl = document.getElementById('errorMessage');
-            const displayEl = document.getElementById('displaySizeExisting');
-
-            messageEl.textContent = message;
-            errorEl.classList.remove('d-none');
-            displayEl.classList.add('d-none');
-        }
-
-        /**
-         * Reset size display when no customer is selected
-         */
-        function resetSizeDisplay() {
-            document.getElementById('displaySizeExisting').classList.add('d-none');
-            document.getElementById('errorSizeExisting').classList.add('d-none');
-            document.getElementById('loadingSizeExisting').classList.add('d-none');
-        }
-
-        /**
-         * Toggle between existing and new customer sections
-         */
-        function toggleCustomerType() {
-            const isExisting = document.getElementById('typeExisting').checked;
-            const secExisting = document.getElementById('sectionExisting');
-            const secNew = document.getElementById('sectionNew');
-
-            if (isExisting) {
-                secExisting.classList.remove('d-none');
-                secNew.classList.add('d-none');
-                resetSizeDisplay();
-            } else {
-                secExisting.classList.add('d-none');
-                secNew.classList.remove('d-none');
+                this.sizes = data.sizes;
+            } catch (e) {
+                this.loadingSizes = false;
+                this.sizeError = 'Terjadi kesalahan saat mengambil data.';
             }
-        }
+        },
 
-        /**
-         * Toggle between atasan and bawahan measurement inputs
-         */
-        function toggleMeasurementInputs() {
-            const isAtasan = document.getElementById('catAtasan').checked;
-            const divAtasan = document.getElementById('inputAtasan');
-            const divBawahan = document.getElementById('inputBawahan');
+        selectSize(size) {
+            this.selectedSizeId = size.id;
+            this.selectedCategoryId = size.category_id;
+        },
 
-            if (isAtasan) {
-                divAtasan.classList.remove('d-none');
-                divBawahan.classList.add('d-none');
+        onSubmit(e) {
+            if (this.customerType === 'existing') {
+                if (!this.customerId || !this.selectedSizeId || !this.selectedCategoryId) {
+                    e.preventDefault();
+                    this.errorMsg = 'Silakan pilih pelanggan dan ukuran terlebih dahulu';
+                    return;
+                }
             } else {
-                divAtasan.classList.add('d-none');
-                divBawahan.classList.remove('d-none');
+                const form = e.target;
+                const name = form.querySelector('input[name="name"]')?.value;
+                const gender = form.querySelector('select[name="gender"]')?.value;
+                if (!name || !gender || !this.newCategory) {
+                    e.preventDefault();
+                    this.errorMsg = 'Silakan isi semua field yang diperlukan (nama, gender, kategori)';
+                    return;
+                }
             }
+            this.submitting = true;
+            this.errorMsg = '';
         }
-    </script>
+    };
+}
+</script>
 @endpush
